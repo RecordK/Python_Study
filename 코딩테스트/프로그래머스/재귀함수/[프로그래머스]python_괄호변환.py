@@ -11,3 +11,4 @@ def solution(p):
     answer = ''
     return answer
 
+## 재귀함수를 사용하는 문제인데.... 이걸 뭘 어떻게해야 잘 풀지?.. ㅠㅠ
