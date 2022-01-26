@@ -286,3 +286,26 @@ chart=chart.drop('순위',axis=1)
 
 chart[chart['아티스트']=='aespa']
 
+# 멜론차트  순위, 곡명, 가수, 앨범명  추출
+
+import pandas as pd
+url="https://www.melon.com/chart/week/index.htm"
+
+import requests
+headers = {'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.96 Safari/537.36'}
+response = requests.get(url, headers=headers).text
+
+melon = pd.read_html( response )
+len(melon)
+melon[0]
+
+melon=melon[0][['순위','곡정보','앨범']]
+
+melon
+
+melon.index=melon['순위']
+
+melon
+
+melon.drop('순위',axis=1)
+
