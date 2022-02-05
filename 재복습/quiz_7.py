@@ -68,7 +68,7 @@ air_all.sort_values('미세먼지(㎍/㎥)').tail(10)
 
 
 #12 강남구 측정소와 종로구 측정소의 날짜별 미세먼지 량을 선 그래프로 그리세요
-
+import matplotlib.dates as mdates
 
 
 # 13. 권역별 날짜별 미세먼지 량을  선그래프로 그리세요. X축은 날짜
@@ -79,16 +79,18 @@ air_all.sort_values('미세먼지(㎍/㎥)').tail(10)
 
 air_all.info()
 
-강남종로=air_all[air_all['측정소명'].isin(['강남구','종로구'])]['미세먼지(㎍/㎥)']
-강남종로.plot()
-
 강남종로=air_all[air_all.측정소명.isin(['강남구','종로구'])]
 
-plt.figure(figsize=(100,5))
-plt.xticks(강남종로[강남종로['측정소명']=='강남구']['측정일자'],
-           강남종로[강남종로['측정소명']=='강남구']['미세먼지(㎍/㎥)'],
-           rotation=60)
-plt.gca().xaxis.set_major_formatter(mticker.FormatStrFormatter('%i'))
+from matplotlib import dates
+plt.figure(figsize=(20,5))
+# plt.xticks(강남종로[강남종로['측정소명']=='강남구']['측정일자'],
+#            강남종로[강남종로['측정소명']=='강남구']['미세먼지(㎍/㎥)'],
+#            rotation=60)
+plt.xticks(rotation=45)
+# DateFormatter 객체를 생성. 포맷팅할 형식도 함께 지정.
+dateFmt = mdates.DateFormatter('%Y-%m-%d')
+# x축 레이블을 포맷팅.
+ax.xaxis.set_major_formatter(dateFmt)
 plt.plot(
     강남종로[강남종로['측정소명']=='강남구']['측정일자'],
     강남종로[강남종로['측정소명']=='강남구']['미세먼지(㎍/㎥)']
