@@ -15,11 +15,19 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
-!sudo apt-get install -y fonts-nanum
-!sudo fc-cache -fv
-!rm ~/.cache/matplotlib -rf
-plt.rc('font', family='NanumBarunGothic')
+import matplotlib.font_manager as fm  # 폰트 관련 용도
+# !sudo apt-get install -y fonts-nanum
+# !sudo fc-cache -fv
+# !rm ~/.cache/matplotlib -rf
+import matplotlib.font_manager as fm  # 폰트 관련 용도
+path = '/usr/share/fonts/truetype/nanum/NanumBarunGothic.ttf'
+  # 설치된 나눔글꼴중 원하는 녀석의 전체 경로를 가져오자
+font_name = fm.FontProperties(fname=path, size=10).get_name()
+
+plt.rc('font', family=font_name)
 plt.rc('axes', unicode_minus=False)
+# 우선 fm._rebuild() 를 해주고
+fm._rebuild()
 
 """## 소스코드"""
 
@@ -41,8 +49,10 @@ air_all.columns
 #5 칼럼별 데이터타입
 air_all.info()
 
-#6 측정일자 칼럼의 타입을 datetime타입으로 변경경
-air_all['측정일자'].astype('datetime64[ns]')
+#6 측정일자 칼럼의 타입을 datetime타입으로 변경
+air_all['측정일자']=air_all['측정일자'].astype('str')
+air_all['측정일자']=pd.to_datetime(air_all['측정일자'])
+
 
 #7 칼럼별 결측치의 갯수를 확인#8 결측치가 있는 행 추출#9 결측들을 0으로로 채움
 def check(data):
@@ -68,37 +78,83 @@ air_all.sort_values('미세먼지(㎍/㎥)').tail(10)
 
 
 #12 강남구 측정소와 종로구 측정소의 날짜별 미세먼지 량을 선 그래프로 그리세요
-import matplotlib.dates as mdates
-
+강남종로=air_all[air_all.측정소명.isin(['강남구','종로구'])]
+plt.figure(figsize=(15,6))
+plt.plot(
+    강남종로[강남종로['측정소명']=='강남구']['측정일자'],
+    강남종로[강남종로['측정소명']=='강남구']['미세먼지(㎍/㎥)'],
+    label='강남구'
+)
+plt.plot(
+    강남종로[강남종로['측정소명']=='종로구']['측정일자'],
+    강남종로[강남종로['측정소명']=='종로구']['미세먼지(㎍/㎥)'],
+    label='종로구'
+)
+plt.title('날짜별 미세먼지 농도')
+plt.xlabel('날짜')
+plt.ylabel('미세먼지(㎍/㎥)')
+plt.legend()
+plt.xticks(rotation=45)
+plt.show()
 
 # 13. 권역별 날짜별 미세먼지 량을  선그래프로 그리세요. X축은 날짜
+quiz13=air_all.pivot_table(
+    index='권역명',
+    columns='측정일자',
+    values='미세먼지(㎍/㎥)',
+    aggfunc='mean'
+)
+plt.figure(figsize=(15,6))
+for i in range(len(quiz13.index)):
+  plt.plot(
+      quiz13.columns,
+      quiz13.values[i],
+      label=quiz13.index[i]
+  )
+plt.title('권역별 날짜별 미세먼지 농도')
+plt.xlabel('날짜')
+plt.ylabel('미세먼지(㎍/㎥)')
+plt.legend()
+plt.xticks(rotation=45)
+plt.show()
 
-
+# 권역=air_all.권역명.unique()
+# plt.figure(figsize=(15,6))
+# for i in 권역:
+#   plt.plot(
+#       air_all[air_all['권역명']==i]['측정일자'],
+#       air_all[air_all['권역명']==i]['미세먼지(㎍/㎥)'],
+#       label=i,
+#   )
+# plt.title('권역별 날짜별 미세먼지 농도')
+# plt.xlabel('날짜')
+# plt.ylabel('미세먼지(㎍/㎥)')
+# plt.legend()
+# plt.xticks(rotation=45)
+# plt.show()
 
 # 14. 측정소별 날짜별 미세먼지 변화량이 가장 큰 측정소와 작은 측정소의 이름을 찾아 출력하세요
 
-air_all.info()
+# 박스 그래프
+측정날짜=air_all.측정일자.unique()
+측정소=air_all.측정소명.unique()
+box_data=list()
+labels=list()
 
-강남종로=air_all[air_all.측정소명.isin(['강남구','종로구'])]
+for 측정 in 측정소 :
+    data = air_all[air_all['측정소명'] == 측정]
+    box_data.append(data['미세먼지(㎍/㎥)'])
+    labels.append(측정)
 
-from matplotlib import dates
-plt.figure(figsize=(20,5))
-# plt.xticks(강남종로[강남종로['측정소명']=='강남구']['측정일자'],
-#            강남종로[강남종로['측정소명']=='강남구']['미세먼지(㎍/㎥)'],
-#            rotation=60)
-plt.xticks(rotation=45)
-# DateFormatter 객체를 생성. 포맷팅할 형식도 함께 지정.
-dateFmt = mdates.DateFormatter('%Y-%m-%d')
-# x축 레이블을 포맷팅.
-ax.xaxis.set_major_formatter(dateFmt)
-plt.plot(
-    강남종로[강남종로['측정소명']=='강남구']['측정일자'],
-    강남종로[강남종로['측정소명']=='강남구']['미세먼지(㎍/㎥)']
-)
+plt.figure(figsize=(16,10))
+plt.boxplot(box_data, labels=labels)
+plt.show()
 
-강남종로[강남종로['측정소명']=='강남구']['측정일자']
+# 분산 그래프
+sns.FacetGrid(air_all, row = '측정소명').map(sns.distplot, '미세먼지(㎍/㎥)')
 
-강남종로[강남종로['측정소명']=='종로구']['미세먼지(㎍/㎥)']
-
-import matplotlib.ticker as mticker
-
+# 첨도
+from scipy.stats import kurtosis
+quiz14={}
+quiz14={측정:round(air_all[air_all['측정소명'] == 측정]['미세먼지(㎍/㎥)'].kurtosis(),3) for 측정 in 측정소}
+print(sorted(quiz14.items(),key=lambda x :-x[1])[0][0],sorted(quiz14.items(),key=lambda x :-x[1])[-1][0])
