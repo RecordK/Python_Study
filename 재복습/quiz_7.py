@@ -157,4 +157,8 @@ sns.FacetGrid(air_all, row = '측정소명').map(sns.distplot, '미세먼지(㎍
 from scipy.stats import kurtosis
 quiz14={}
 quiz14={측정:round(air_all[air_all['측정소명'] == 측정]['미세먼지(㎍/㎥)'].kurtosis(),3) for 측정 in 측정소}
-print(sorted(quiz14.items(),key=lambda x :-x[1])[0][0],sorted(quiz14.items(),key=lambda x :-x[1])[-1][0])
+
+print(sorted(quiz14.items(),key=lambda x :-x[1])[-1][0],sorted(quiz14.items(),key=lambda x :-x[1])[0][0])
+
+quiz14
+
